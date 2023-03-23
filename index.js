@@ -29,10 +29,10 @@ app.post('/get_partner/:id', async (req, res) => {
         let data = req.params.id;
         let pool = await sql.connect(config)
 
-        let details = await pool.request()
+        let result = await pool.request()
             .input('p_id', sql.Int, data)
             .query(`select * from p_partner where p_id = @p_id`)
-        let partner_data = details.recordsets
+        let partner_data = result.recordsets
         res.send(partner_data)
 
     }
@@ -46,7 +46,7 @@ app.post('/create_partner', async (req, res) => {
     try {
         let data = req.body
         let pool = await sql.connect(config)
-        let details = await pool.request()
+        let result = await pool.request()
             .input('p_name', sql.NVarChar, data.p_name)
             .input('p_dba', sql.NVarChar, data.p_pda)
             .input('p_alias', sql.NVarChar, data.p_alias)
@@ -96,7 +96,8 @@ app.post('/create_partner', async (req, res) => {
                         p_country,
                         p_website,
                         p_phone,
-                        p_fax,                            p_toll_free,
+                        p_fax,
+                        p_toll_free,
                         p_internal_sales_rep,
                         p_supp_terms,
                         p_terms,
@@ -146,7 +147,7 @@ app.post('/create_partner', async (req, res) => {
                     )
                select * from p_partner where p_id in (select max(p_id) from p_partner);
                     `)
-        let partner_data = details.recordsets[0];
+        let partner_data = result.recordsets[0];
         res.send({ partner_data });
 
     } catch (err) { res.send(err.message) }
@@ -154,13 +155,11 @@ app.post('/create_partner', async (req, res) => {
 
 // To update or to change the values of a partner
 app.post('/update_partner/:id', async (req, res) => {
-    console.log('eoor0')
     try {
-        console.log('error')
         let p_id = req.params.id
         let data = req.body
         let pool = await sql.connect(config)
-        let details = await pool.request()
+        let result = await pool.request()
             .input('p_id', sql.Int, p_id)
             .input('p_city', sql.NVarChar, data.p_city)
             .query(`
@@ -171,7 +170,7 @@ app.post('/update_partner/:id', async (req, res) => {
                     p_id=@p_id;
                     select * from p_partner where p_id=@p_id;
             `)
-        let partner_data = details.recordsets[0];
+        let partner_data = result.recordsets[0];
         res.send(partner_data);
     } catch (err) { res.send(err.message) }
 })
@@ -182,11 +181,10 @@ app.post('/update_status/:id', async (req, res) => {
         const p_id = req.params.id
         const status = req.body.status
         const pool = await sql.connect(config)
-        let status_details = await pool.request()
+        let status_result = await pool.request()
             .input('p_id', sql.Int, p_id)
             .query(`select p_status from p_partner where p_id = @p_id;`)
-        let status_data = status_details.recordset[0].p_status
-        console.log(status)
+        let status_data = status_result.recordset[0].p_status
         if (status_data === status) {
             res.send({ message: 'conditon already exists' })
             return
